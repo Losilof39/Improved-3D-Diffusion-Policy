@@ -85,10 +85,58 @@ For example,  I put the dataset in `/home/ze/projects/Improved-3D-Diffusion-Poli
 
 Then you could train the policy and deploy it.
 
+### Unitree G1: Converting xr_teleoperate Data
+
+If you collected demonstrations with [xr_teleoperate](https://github.com/unitreerobotics/xr_teleoperate), use the provided conversion script to turn the raw episodes into the zarr format expected by iDP3.
+
+**Step 1 — Get your camera intrinsics.** Run this once on the machine with the RealSense attached:
+
+    python -c "
+    import pyrealsense2 as rs
+    p = rs.pipeline(); p.start()
+    i = p.get_active_profile().get_stream(rs.stream.color) \
+          .as_video_stream_profile().get_intrinsics()
+    print(f'fx={i.fx:.2f} fy={i.fy:.2f} cx={i.ppx:.2f} cy={i.ppy:.2f}')
+    p.stop()"
+
+**Step 2 — Convert episodes to zarr:**
+
+    python scripts/convert_unitree_to_zarr.py \
+        --input_dir  /path/to/your/episodes \
+        --output_zarr Improved-3D-Diffusion-Policy/data/g1_task_zarr \
+        --fx <fx> --fy <fy> --cx <cx> --cy <cy>
+
+The `--input_dir` should contain `episode_0000/`, `episode_0001/`, … subdirectories as written by xr_teleoperate's `EpisodeWriter`.
+
+Optional arguments:
+
+| Argument | Default | Description |
+|---|---|---|
+| `--color_key` | `color_0` | Which colour stream to use for the point cloud |
+| `--depth_key` | `depth_0` | Which depth stream to use |
+| `--depth_scale` | `1000.0` | Divide raw uint16 depth by this to get metres |
+| `--z_near` | `0.1` | Minimum depth (metres) |
+| `--z_far` | `1.5` | Maximum depth (metres) |
+| `--num_points` | `4096` | Points per cloud |
+
+**Step 3 — Verify the output:**
+
+    python -c "
+    import zarr
+    z = zarr.open('Improved-3D-Diffusion-Policy/data/g1_task_zarr', 'r')
+    print('state:      ', z['data/state'].shape)       # (T, 26)
+    print('action:     ', z['data/action'].shape)      # (T, 26)
+    print('point_cloud:', z['data/point_cloud'].shape) # (T, 4096, 6)
+    print('episodes:   ', z['meta/episode_ends'][:])
+    "
+
 **Train.** The script to train policy:
 
-    # 3d policy
+    # 3d policy (GR1)
     bash scripts/train_policy.sh idp3 gr1_dex-3d 0913_example
+
+    # 3d policy (Unitree G1)
+    bash scripts/train_policy.sh idp3 g1_dex-3d g1_experiment
 
     # 2d policy
     bash scripts/train_policy.sh dp_224x224_r3m gr1_dex-image 0913_example
