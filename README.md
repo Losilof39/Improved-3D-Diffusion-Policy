@@ -89,24 +89,31 @@ Then you could train the policy and deploy it.
 
 If you collected demonstrations with [xr_teleoperate](https://github.com/unitreerobotics/xr_teleoperate), use the provided conversion script to turn the raw episodes into the zarr format expected by iDP3.
 
-**Step 1 — Get your camera intrinsics.** Run this once on the machine with the RealSense attached:
+**Recommended camera setup (RealSense D435):** 640×480 @ 15 Hz for both colour and depth. This is the D435's best-characterised mode and gives sufficient point density for 4096-point subsampling.
+
+**Step 1 — Get your camera intrinsics.** Run this once with the camera at your target resolution:
 
     python -c "
     import pyrealsense2 as rs
-    p = rs.pipeline(); p.start()
+    cfg = rs.config()
+    cfg.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 15)
+    p = rs.pipeline(); p.start(cfg)
     i = p.get_active_profile().get_stream(rs.stream.color) \
           .as_video_stream_profile().get_intrinsics()
-    print(f'fx={i.fx:.2f} fy={i.fy:.2f} cx={i.ppx:.2f} cy={i.ppy:.2f}')
+    print(f'--fx {i.fx:.4f} --fy {i.fy:.4f} --cx {i.ppx:.4f} --cy {i.ppy:.4f}')
     p.stop()"
+
+Intrinsics are per-unit and resolution-specific — always read them from the device rather than using nominal values.
 
 **Step 2 — Convert episodes to zarr:**
 
     python scripts/convert_unitree_to_zarr.py \
         --input_dir  /path/to/your/episodes \
         --output_zarr Improved-3D-Diffusion-Policy/data/g1_task_zarr \
-        --fx <fx> --fy <fy> --cx <cx> --cy <cy>
+        --fx <fx> --fy <fy> --cx <cx> --cy <cy> \
+        --z_near 0.2 --z_far 1.2
 
-The `--input_dir` should contain `episode_0000/`, `episode_0001/`, … subdirectories as written by xr_teleoperate's `EpisodeWriter`.
+The `--input_dir` should contain `episode_0000/`, `episode_0001/`, … subdirectories as written by xr_teleoperate's `EpisodeWriter`. Adjust `--z_far` to match your workspace depth (1.2 m works well for tabletop manipulation).
 
 Optional arguments:
 
@@ -118,6 +125,8 @@ Optional arguments:
 | `--z_near` | `0.1` | Minimum depth (metres) |
 | `--z_far` | `1.5` | Maximum depth (metres) |
 | `--num_points` | `4096` | Points per cloud |
+
+**Deployment on G1 Jetson:** The repo targets Python 3.8, which matches the Jetson environment on the G1. Install PyTorch using NVIDIA's Jetson-specific wheel (JetPack) rather than the standard pip wheel — the standard `torch==2.1.0` build does not support Jetson CUDA.
 
 **Step 3 — Verify the output:**
 
