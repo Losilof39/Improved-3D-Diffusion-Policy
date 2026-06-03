@@ -16,6 +16,7 @@ Output zarr structure (ReplayBuffer format):
       state        float32 (T, state_dim)   -- concatenated arm + hand qpos
       action       float32 (T, state_dim)   -- same layout as state
       point_cloud  float32 (T, N, 6)        -- XYZ + normalised RGB
+      img          uint8   (T, H, W, 3)     -- RGB image (native resolution)
     meta/
       episode_ends int64   (num_episodes,)
 """
@@ -123,7 +124,7 @@ def process_episode(
     if not frames:
         return None
 
-    ep_states, ep_actions, ep_clouds = [], [], []
+    ep_states, ep_actions, ep_clouds, ep_imgs = [], [], [], []
 
     for frame in frames:
         # --- proprioception ---
@@ -165,11 +166,13 @@ def process_episode(
         ep_states.append(state)
         ep_actions.append(action)
         ep_clouds.append(cloud)
+        ep_imgs.append(rgb)
 
     return (
         np.stack(ep_states),   # (T, state_dim)
         np.stack(ep_actions),  # (T, state_dim)
         np.stack(ep_clouds),   # (T, num_points, 6)
+        np.stack(ep_imgs),     # (T, H, W, 3)
     )
 
 
@@ -221,13 +224,14 @@ def main():
             n_skip += 1
             continue
 
-        ep_states, ep_actions, ep_clouds = result
+        ep_states, ep_actions, ep_clouds, ep_imgs = result
         rb.add_episode({
             "state":       ep_states,
             "action":      ep_actions,
             "point_cloud": ep_clouds,
+            "img":         ep_imgs,
         })
-        print(f"OK  ({len(ep_states)} frames, state_dim={ep_states.shape[1]})")
+        print(f"OK  ({len(ep_states)} frames, state_dim={ep_states.shape[1]}, img={ep_imgs.shape[1:]})")
         n_ok += 1
 
     if n_ok == 0:
@@ -238,9 +242,10 @@ def main():
     rb.save_to_path(str(output_path))
 
     print(f"\nSaved {n_ok} episodes ({n_skip} skipped) → {output_path}")
-    print(f"  state:       {rb['state'].shape}")
-    print(f"  action:      {rb['action'].shape}")
-    print(f"  point_cloud: {rb['point_cloud'].shape}")
+    print(f"  state:        {rb['state'].shape}")
+    print(f"  action:       {rb['action'].shape}")
+    print(f"  point_cloud:  {rb['point_cloud'].shape}")
+    print(f"  img:          {rb['img'].shape}")
     print(f"  episode_ends: {rb.episode_ends[:10]}{'...' if rb.n_episodes > 10 else ''}")
 
 
