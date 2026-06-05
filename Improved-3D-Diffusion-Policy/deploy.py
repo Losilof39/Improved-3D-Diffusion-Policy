@@ -3,6 +3,7 @@ import sys
 sys.stdout = open(sys.stdout.fileno(), mode='w', buffering=1)
 sys.stderr = open(sys.stderr.fileno(), mode='w', buffering=1)
 
+import diffusion_policy_3d.compat  # must precede any diffusers import
 import hydra
 import time
 from omegaconf import OmegaConf

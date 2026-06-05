@@ -4,6 +4,7 @@ Training:
 python train.py --config-name=train_diffusion_lowdim_workspace
 """
 import os
+import diffusion_policy_3d.compat  # must precede any diffusers import
 from diffusion_policy_3d.workspace.base_workspace import BaseWorkspace
 import pathlib
 from omegaconf import OmegaConf

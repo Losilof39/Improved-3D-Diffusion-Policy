@@ -2,11 +2,12 @@
 
 #   bash scripts/train_policy.sh idp3 gr1_dex-3d 0913_example
 #   bash scripts/train_policy.sh dp_224x224_r3m gr1_dex-image 0913_example
+#   bash scripts/train_policy.sh idp3 g1_dex-3d empty_bucket_v2
 
-dataset_path=/home/ze/projects/Improved-3D-Diffusion-Policy/training_data_example
+dataset_path=/home/luke/MSMD/repos/Improved-3D-Diffusion-Policy/Improved-3D-Diffusion-Policy/data/g1_empty_bucket_v2
 
 
-DEBUG=False
+DEBUG=True
 wandb_mode=offline
 
 
@@ -48,7 +49,9 @@ python train.py --config-name=${config_name}.yaml \
                             exp_name=${exp_name} \
                             logging.mode=${wandb_mode} \
                             checkpoint.save_ckpt=${save_ckpt} \
-                            task.dataset.zarr_path=$dataset_path 
+                            task.dataset.zarr_path=$dataset_path \
+                            dataloader.batch_size=24 \
+                            val_dataloader.batch_size=24
 
 
 
