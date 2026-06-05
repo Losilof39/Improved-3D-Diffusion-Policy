@@ -54,11 +54,13 @@ Install conda env and packages for both learning and deployment machines:
 
 
     # install 3d diffusion policy
-    pip install --no-cache-dir wandb ipdb gpustat visdom notebook mediapy torch_geometric natsort scikit-video easydict pandas moviepy imageio imageio-ffmpeg termcolor av open3d dm_control dill==0.3.5.1 hydra-core==1.2.0 einops==0.4.1 diffusers==0.11.1 zarr==2.12.0 numba==0.56.4 pygame==2.1.2 shapely==1.8.4 tensorboard==2.10.1 tensorboardx==2.5.1 absl-py==0.13.0 pyparsing==2.4.7 jupyterlab==3.0.14 scikit-image yapf==0.31.0 opencv-python==4.5.3.56 psutil av matplotlib setuptools==59.5.0
+    pip install --no-cache-dir wandb ipdb gpustat visdom notebook mediapy torch_geometric natsort scikit-video easydict pandas moviepy imageio imageio-ffmpeg termcolor av open3d dm_control dill==0.3.5.1 hydra-core==1.2.0 einops==0.4.1 diffusers==0.20.2 zarr==2.12.0 numba==0.56.4 pygame==2.1.2 shapely==1.8.4 tensorboard==2.10.1 tensorboardx==2.5.1 absl-py==0.13.0 pyparsing==2.4.7 jupyterlab==3.0.14 scikit-image yapf==0.31.0 opencv-python==4.5.3.56 psutil av matplotlib setuptools==59.5.0
 
     cd Improved-3D-Diffusion-Policy
     pip install -e .
     cd ..
+
+> **Note on `huggingface_hub` compatibility:** `diffusers==0.20.2` still references `cached_download`, which was removed in `huggingface_hub>=0.23.0`. A compatibility shim (`diffusion_policy_3d/compat.py`) is included in this repo and applied automatically at the start of `train.py` and `deploy.py` — no manual action required.
 
     # install for diffusion policy if you want to use image-based policy
     pip install timm==0.9.7
@@ -149,6 +151,35 @@ Optional arguments:
 
     # 2d policy
     bash scripts/train_policy.sh dp_224x224_r3m gr1_dex-image 0913_example
+
+### Tuning iDP3 Hyperparameters
+
+All parameters below are [Hydra](https://hydra.cc/) overrides and can be appended directly to the training command:
+
+```bash
+bash scripts/train_policy.sh idp3 g1_dex-3d my_run \
+    training.num_epochs=500 \
+    dataloader.batch_size=32 \
+    val_dataloader.batch_size=32 \
+    n_obs_steps=2 \
+    horizon=16
+```
+
+| Parameter | Default | Override key | Notes |
+|---|---|---|---|
+| Epochs | 301 | `training.num_epochs` | Increase for larger datasets |
+| Batch size | 64 | `dataloader.batch_size` + `val_dataloader.batch_size` | Use 24 for 8 GB GPU, 64 for 24 GB |
+| Learning rate | 1e-4 | `optimizer.lr` | |
+| LR warmup steps | 500 | `training.lr_warmup_steps` | |
+| Obs steps | 2 | `n_obs_steps` | How many past observations fed to policy |
+| Prediction horizon | 16 | `horizon` | Total timesteps predicted per inference |
+| Action steps executed | 15 | `n_action_steps` | Must be ≤ `horizon − 1` |
+| Points per cloud | 4096 | `policy.pointcloud_encoder_cfg.num_points` | Reduce to 1024 to cut memory and speed up training |
+| Diffusion train timesteps | 50 | `policy.noise_scheduler.num_train_timesteps` | |
+| Diffusion inference steps | 10 | `policy.num_inference_steps` | DDIM steps; lower = faster deployment |
+| Model width | [256,512,1024] | `policy.down_dims` | Reduce to `[128,256,512]` for smaller GPUs |
+| Save checkpoints | False | `checkpoint.save_ckpt` | Set `True` to save every N epochs |
+| Checkpoint interval | 100 | `training.checkpoint_every` | Epochs between checkpoint saves |
 
 **Deploy.** After you have trained the policy, deploy the policy with the following command. For missing packages such as `communication.py`, see another [our repo](https://github.com/YanjieZe/Humanoid-Teleoperation/tree/main/humanoid_teleoperation/teleop-zenoh)
 
