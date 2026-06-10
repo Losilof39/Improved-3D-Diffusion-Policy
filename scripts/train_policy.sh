@@ -4,10 +4,10 @@
 #   bash scripts/train_policy.sh dp_224x224_r3m gr1_dex-image 0913_example
 #   bash scripts/train_policy.sh idp3 g1_dex-3d empty_bucket_v2
 
-dataset_path=/home/luke/MSMD/repos/Improved-3D-Diffusion-Policy/Improved-3D-Diffusion-Policy/data/g1_empty_bucket_v2
+dataset_path=~/MSMD/repos/Improved-3D-Diffusion-Policy/Improved-3D-Diffusion-Policy/data/g1_empty_bucket_v2
 
 
-DEBUG=True
+DEBUG=False
 wandb_mode=offline
 
 
@@ -51,7 +51,10 @@ python train.py --config-name=${config_name}.yaml \
                             checkpoint.save_ckpt=${save_ckpt} \
                             task.dataset.zarr_path=$dataset_path \
                             dataloader.batch_size=24 \
-                            val_dataloader.batch_size=24
+                            val_dataloader.batch_size=24 \
+                            policy.use_pc_color=true \
+                            policy.pointcloud_encoder_cfg.in_channels=6 \
+                            training.resume=false
 
 
 

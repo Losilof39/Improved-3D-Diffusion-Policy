@@ -134,8 +134,9 @@ class DiffusionPointcloudPolicy(BasePolicy):
         nobs = self.normalizer.normalize(obs_dict)
         if not self.use_pc_color:
             nobs['point_cloud'] = nobs['point_cloud'][..., :3]
-        if self.use_pc_color: # normalize color
-            nobs['point_cloud'][..., 3:] /= 255.0
+        # NOTE: when use_pc_color is True, point_cloud[..., 3:] is already
+        # normalized RGB in [0, 1] (see convert_unitree_to_zarr.py), so no
+        # further scaling is applied here.
         
         value = next(iter(nobs.values()))
         B, To = value.shape[:2]
@@ -239,8 +240,9 @@ class DiffusionPointcloudPolicy(BasePolicy):
         nobs = self.normalizer.normalize(obs_dict)
         if not self.use_pc_color:
             nobs['point_cloud'] = nobs['point_cloud'][..., :3]
-        if self.use_pc_color: # normalize color
-            nobs['point_cloud'][..., 3:] /= 255.0
+        # NOTE: when use_pc_color is True, point_cloud[..., 3:] is already
+        # normalized RGB in [0, 1] (see convert_unitree_to_zarr.py), so no
+        # further scaling is applied here.
         
         
         value = next(iter(nobs.values()))
@@ -320,8 +322,9 @@ class DiffusionPointcloudPolicy(BasePolicy):
 
         if not self.use_pc_color:
             nobs['point_cloud'] = nobs['point_cloud'][..., :3]
-        if self.use_pc_color: # normalize color
-            nobs['point_cloud'][..., 3:] /= 255.0
+        # NOTE: when use_pc_color is True, point_cloud[..., 3:] is already
+        # normalized RGB in [0, 1] (see convert_unitree_to_zarr.py), so no
+        # further scaling is applied here.
 
         batch_size = nactions.shape[0]
         horizon = nactions.shape[1]

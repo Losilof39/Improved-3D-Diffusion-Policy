@@ -21,7 +21,11 @@ dataset:
   pad_before: ${eval:'${n_obs_steps}-1'}
   pad_after: ${eval:'${n_action_steps}-1'}
   seed: 42
-  val_ratio: 0.00
+  val_ratio: 0.10
   max_train_episodes: null
 
   num_points: ${policy.pointcloud_encoder_cfg.num_points}
+
+  use_pc_augmentation: true
+  pc_jitter_std: 0.005   # meters, gaussian jitter on point cloud XYZ
+  pc_dropout_ratio: 0.05 # fraction of points replaced with duplicates each frame
