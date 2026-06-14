@@ -24,6 +24,7 @@ class GR1DexDataset3D(BaseDataset):
             use_pc_augmentation=False,
             pc_jitter_std=0.005,
             pc_dropout_ratio=0.0,
+            agent_pos_noise_std=0.0,
             ):
         super().__init__()
         cprint(f'Loading GR1DexDataset from {zarr_path}', 'green')
@@ -33,6 +34,7 @@ class GR1DexDataset3D(BaseDataset):
         self.use_pc_augmentation = use_pc_augmentation
         self.pc_jitter_std = pc_jitter_std
         self.pc_dropout_ratio = pc_dropout_ratio
+        self.agent_pos_noise_std = agent_pos_noise_std
 
 
         buffer_keys = [
@@ -77,6 +79,8 @@ class GR1DexDataset3D(BaseDataset):
             )
         val_set.train_mask = ~self.train_mask
         val_set.use_pc_augmentation = False
+        # never inject sensor noise into the held-out/eval copy
+        val_set.agent_pos_noise_std = 0.0
         return val_set
 
     def get_normalizer(self, mode='limits', **kwargs):
@@ -117,6 +121,9 @@ class GR1DexDataset3D(BaseDataset):
 
     def _sample_to_data(self, sample):
         agent_pos = sample['state'][:,].astype(np.float32)
+        if self.agent_pos_noise_std > 0:
+            agent_pos = agent_pos + np.random.normal(
+                0, self.agent_pos_noise_std, size=agent_pos.shape).astype(np.float32)
         point_cloud = sample['point_cloud'][:,].astype(np.float32)
         point_cloud = point_process.uniform_sampling_numpy(point_cloud, self.num_points)
         if self.use_pc_augmentation:

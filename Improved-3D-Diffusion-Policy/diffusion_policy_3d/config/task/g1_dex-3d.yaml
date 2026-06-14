@@ -29,3 +29,4 @@ dataset:
   use_pc_augmentation: true
   pc_jitter_std: 0.005   # meters, gaussian jitter on point cloud XYZ
   pc_dropout_ratio: 0.05 # fraction of points replaced with duplicates each frame
+  agent_pos_noise_std: 0.0

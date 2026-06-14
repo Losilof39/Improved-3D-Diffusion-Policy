@@ -180,6 +180,7 @@ bash scripts/train_policy.sh idp3 g1_dex-3d my_run \
 | Model width | [256,512,1024] | `policy.down_dims` | Reduce to `[128,256,512]` for smaller GPUs |
 | Save checkpoints | False | `checkpoint.save_ckpt` | Set `True` to save every N epochs |
 | Checkpoint interval | 100 | `training.checkpoint_every` | Epochs between checkpoint saves |
+| Agent-pos noise std | 0.0 | `task.dataset.agent_pos_noise_std` | Gaussian noise added to `agent_pos` observations only (never to actions); helps avoid overfitting to exact joint trajectories. Try ~0.01 |
 
 **Deploy.** After you have trained the policy, deploy the policy with the following command. For missing packages such as `communication.py`, see another [our repo](https://github.com/YanjieZe/Humanoid-Teleoperation/tree/main/humanoid_teleoperation/teleop-zenoh)
 
