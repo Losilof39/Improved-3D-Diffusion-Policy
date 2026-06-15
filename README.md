@@ -198,6 +198,24 @@ Note that you may not run the deployment code without a robot (different robots 
 
 You can specify `vis_cloud=1` to render the point cloud as in the paper.
 
+### Deployment OOD Analysis
+
+After running `scripts/deploy_policy.sh`, each rollout's joint states, actions, and camera frames are saved to `policies/eval_logs/<timestamp>/` (including `episode_log.npz` and per-frame `NNNNNN_{color,depth}.png`). Use the following scripts to check whether a rollout falls outside the training distribution.
+
+**Joint-state / action check** — PCA + Mahalanobis comparison of the rollout's `agent_pos`/action trajectories against the training zarr dataset:
+
+    conda run -n idp3 python scripts/analyze_ood.py --episode-log policies/eval_logs/<run>/episode_log.npz
+
+Writes `pca_agent_pos.png`, `pca_action.png`, and `summary.txt` (Mahalanobis distances + per-joint-group range checks) to `<episode-log dir>/ood_analysis/` by default. Pass `--zarr-path` if your training data isn't `Improved-3D-Diffusion-Policy/data/g1_empty_bucket_v2`.
+
+**Point-cloud encoder check** — reconstructs point clouds from the saved depth/colour PNGs, embeds them with the checkpoint's trained PointNet encoder, and compares against training point-cloud embeddings:
+
+    conda run -n idp3 python scripts/analyze_ood_pointcloud.py --ckpt latest.ckpt
+
+Scans all rollouts under `--eval-logs-dir` (default `policies/eval_logs`) and writes `pca_pointcloud_embedding.png` + `summary.txt` to `policies/eval_logs/pointcloud_ood_analysis/`.
+
+Both scripts share their PCA/Mahalanobis helpers in `scripts/ood_common.py`.
+
 
 ## BibTeX
 
