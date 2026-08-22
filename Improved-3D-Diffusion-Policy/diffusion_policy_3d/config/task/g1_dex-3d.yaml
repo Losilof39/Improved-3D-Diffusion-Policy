@@ -1,17 +1,17 @@
 name: g1_task
 
-# Unitree G1 + Inspire/BrainCo hands: 26 DOF
-# [0:7]  left_arm  [7:14] right_arm  [14:20] left_hand  [20:26] right_hand
+# Unitree G1 + Inspire/BrainCo hands: left arm+hand only, 13 DOF
+# [0:7] left_arm  [7:13] left_hand
 shape_meta: &shape_meta
   obs:
     point_cloud:
       shape: [4096, 6]
       type: point_cloud
     agent_pos:
-      shape: [26]
+      shape: [13]
       type: low_dim
   action:
-    shape: [26]
+    shape: [13]
 
 
 dataset:

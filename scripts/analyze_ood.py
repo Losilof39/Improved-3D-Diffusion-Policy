@@ -67,7 +67,7 @@ def range_check_report(train_data, eval_data, name):
 def main():
     parser = argparse.ArgumentParser(description="PCA / Mahalanobis OOD check for an iDP3 deployment rollout.")
     parser.add_argument("--zarr-path", type=Path,
-                         default=Path("Improved-3D-Diffusion-Policy/data/g1_empty_bucket_v2"),
+                         default=Path("Improved-3D-Diffusion-Policy/data/g1_empty_bucket_v3_abs"),
                          help="Training zarr dataset (must contain data/state and data/action)")
     parser.add_argument("--episode-log", type=Path, required=True,
                          help="Path to episode_log.npz written during deployment")

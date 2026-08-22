@@ -97,8 +97,8 @@ def reconstruct_point_cloud(run_dir, frame_id, intrinsics, z_near, z_far, depth_
 def main():
     parser = argparse.ArgumentParser(description="Point-cloud-encoder OOD check using deployment depth/color images.")
     parser.add_argument("--ckpt", type=Path, default=Path("latest.ckpt"))
-    parser.add_argument("--zarr-path", type=Path, default=Path("Improved-3D-Diffusion-Policy/data/g1_empty_bucket_v2"))
-    parser.add_argument("--eval-logs-dir", type=Path, default=Path("policies/eval_logs"))
+    parser.add_argument("--zarr-path", type=Path, default=Path("Improved-3D-Diffusion-Policy/data/g1_empty_bucket_v3_abs"))
+    parser.add_argument("--eval-logs-dir", type=Path, default=Path("policies/logs/vanilla/hard/20260622_075054"))
     parser.add_argument("--n-train-samples", type=int, default=2000)
     parser.add_argument("--output-dir", type=Path, default=Path("policies/eval_logs/pointcloud_ood_analysis"))
     parser.add_argument("--fx", type=float, default=DEFAULT_INTRINSICS['fx'])

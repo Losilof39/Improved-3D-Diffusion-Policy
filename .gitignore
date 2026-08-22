@@ -9,6 +9,8 @@ raw_data/
 timm/
 .vscode/
 
+policies/
+
 deploy_dir/
 deploy_vis_dir/
 ablation_data/

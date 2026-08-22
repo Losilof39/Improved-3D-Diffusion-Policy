@@ -36,7 +36,10 @@ python deploy.py --config-name=${config_name}.yaml \
                             exp_name=${exp_name} \
                             logging.mode=${wandb_mode} \
                             checkpoint.save_ckpt=${save_ckpt} \
-                            task.dataset.zarr_path=$dataset_path 
+                            task.dataset.zarr_path=$dataset_path \
+                            checkpoint.save_ckpt=True \
+                            checkpoint.topk.k=1 \
+                            checkpoint.topk.mode=max
 
 
 

@@ -28,6 +28,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import zarr
 
 # Allow running from the repo root without installing the package.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "Improved-3D-Diffusion-Policy"))
@@ -207,7 +208,11 @@ def main():
 
     print(f"Found {len(episode_dirs)} episode directories")
 
-    rb = ReplayBuffer.create_empty_numpy()
+    # Write directly to disk so RAM usage stays flat regardless of episode count.
+    output_path = Path(args.output_zarr)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    store = zarr.DirectoryStore(str(output_path))
+    rb = ReplayBuffer.create_empty_zarr(storage=store)
     n_ok, n_skip = 0, 0
 
     for ep_dir in episode_dirs:
@@ -236,10 +241,6 @@ def main():
 
     if n_ok == 0:
         sys.exit("No episodes were converted successfully.")
-
-    output_path = Path(args.output_zarr)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    rb.save_to_path(str(output_path))
 
     print(f"\nSaved {n_ok} episodes ({n_skip} skipped) → {output_path}")
     print(f"  state:        {rb['state'].shape}")
