@@ -5,6 +5,9 @@ __pycache__/
 *.egg-info/
 ckpts/
 
+# checkpoints/ is tracked via Git LFS - never ignore it despite the *.pt rule above
+!checkpoints/**
+
 raw_data/
 timm/
 .vscode/
